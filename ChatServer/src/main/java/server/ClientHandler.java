@@ -40,11 +40,12 @@ public class ClientHandler {
                 @Override
                 public void run() {
                     if(alive == false) {
+                        cancel();
                         closeConnection();
                     }
                     alive = false;
                 }
-            }, 10*1000, 120 * 1000);
+            }, 120*1000, 120 * 1000);
 
             new Thread(new Runnable() {
                 @Override
