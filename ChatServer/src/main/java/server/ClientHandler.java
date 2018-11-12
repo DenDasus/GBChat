@@ -74,6 +74,20 @@ public class ClientHandler {
                                     sendMsg("Неверный логин или пароль!");
                                 }
                             }
+                            
+                            if(str.startsWith("/reg")) {
+                                String[] parts = str.split(" ");
+                                String login = parts[1];
+                                String pass = parts[2];
+                                String nick = parts[3];
+                                
+                                if(AuthService.isUserExist(login)) {
+                                    sendMsg("Данный логин уже зарегистрирован!");
+                                } else {
+                                    AuthService.addUser(login, pass, nick);
+                                    sendMsg("/regOk");
+                                }
+                            }
                         }
                         
                         while (true) {
@@ -91,6 +105,25 @@ public class ClientHandler {
                                 if(str.startsWith("/keepAliveMsg")) {
                                     alive = true;
                                 }
+                                if(str.startsWith("/updateNick")) {
+                                    String[] parts = str.split(" ");
+                                    String login = parts[1];
+                                    String currPass = parts[2];
+                                    String newNick = parts[3];
+                                    if(AuthService.updateNick(login, currPass, newNick)){
+                                        out.writeUTF("/updateNickOk");
+                                    }
+                                }
+                                if(str.startsWith("/updatePass")) {
+                                    String[] parts = str.split(" ");
+                                    String login = parts[1];
+                                    String currPass = parts[2];
+                                    String newPass = parts[3];
+                                    if(AuthService.updatePass(login, currPass, newPass)) {
+                                        out.writeUTF("/updatePassOk");
+                                    }
+                                }
+                                
                             } else {
                                 server.broadCastMsg(ClientHandler.this, str);
                             }

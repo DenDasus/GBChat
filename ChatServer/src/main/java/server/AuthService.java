@@ -54,6 +54,57 @@ public class AuthService {
         return null;
     }
     
+    public static boolean isUserExist(String login) {
+        boolean exist = false;
+        try {
+            ResultSet rs = statement.executeQuery("SELECT login FROM main WHERE login = '" + login + "'");
+            if(rs.next()) {
+                exist = true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return exist;
+    }
+    
+    public static boolean updateNick(String login, String currPass, String newNick) {
+        if(getNickByLoginAndPass(login, currPass, true) != null) {
+            String updateNick = "UPDATE main SET nickname = ? WHERE login = ?";
+            try {
+                PreparedStatement ps = connection.prepareStatement(updateNick);
+                ps.setString(1, newNick);
+                ps.setString(2, login);
+                int cnt = ps.executeUpdate();
+                System.out.println(cnt);
+                if(cnt > 0) {
+                    return true;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+    
+    public static boolean updatePass(String login, String currPass, String newPass) {
+        if(getNickByLoginAndPass(login, currPass, true) != null) {
+            String updatePass = "UPDATE main SET password = ? WHERE login = ?";
+            try {
+                PreparedStatement ps = connection.prepareStatement(updatePass);
+                ps.setInt(1, newPass.hashCode());
+                ps.setString(2, login);
+                int cnt = ps.executeUpdate();
+                System.out.println(cnt);
+                if(cnt > 0) {
+                    return true;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+    
     public static void disconnect() {
         try {
             connection.close();

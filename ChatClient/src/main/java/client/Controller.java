@@ -30,13 +30,35 @@ public class Controller implements Initializable {
     @FXML
     PasswordField passwordField;
     @FXML
-    HBox authPanel;
+    VBox authPanel;
     @FXML
     HBox messageSendPanel;
     @FXML
     ListView<String> clientsList;
     @FXML
     ScrollPane messagesBoxScrollPane;
+    @FXML
+    VBox registrationPanel;
+    @FXML
+    VBox updateUserDataPanel;
+    @FXML
+    TextField regLoginField;
+    @FXML
+    PasswordField regPasswordField;
+    @FXML
+    PasswordField regPasswordRepeatField;
+    @FXML
+    TextField regNickField;
+    @FXML
+    VBox rightPanel;
+    @FXML
+    PasswordField newPasswordField;
+    @FXML
+    PasswordField newPasswordRepeatField;
+    @FXML
+    TextField newNickField;
+    @FXML
+    PasswordField currentPasswordField;
 
     Socket socket;
 
@@ -48,7 +70,7 @@ public class Controller implements Initializable {
     final int PORT = 8189;
     
     private boolean authorized = false;
-    private String myNickName;
+    private String myLogin;
     
     private Timer keepAliveTimer;
     
@@ -60,16 +82,16 @@ public class Controller implements Initializable {
             authPanel.setManaged(true);
             messageSendPanel.setVisible(false);
             messageSendPanel.setManaged(false);
-            clientsList.setVisible(false);
-            clientsList.setManaged(false);
+            rightPanel.setVisible(false);
+            rightPanel.setManaged(false);
         } else {
             authPanel.setVisible(false);
             authPanel.setManaged(false);
             messageSendPanel.setVisible(true);
             messageSendPanel.setManaged(true);
-            clientsList.setVisible(true);
-            clientsList.setManaged(true);
-            clientsList.setPrefWidth(150);
+            rightPanel.setVisible(true);
+            rightPanel.setManaged(true);
+            rightPanel.setPrefWidth(150);
         }
     }
 
@@ -107,15 +129,16 @@ public class Controller implements Initializable {
                             if (str.equals("/authok")) {
                                 setAuthorized(true);
                                 break;
-                            } else {
-                                MessageCell msg = new MessageCell("System", "12:56", (str + "\n"), false, true);
-                                Platform.runLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        messagesVBox.getChildren().add(msg);
-                                    }
-                                });
                             }
+                            if(str.equals("/regOk")) {
+                                closeRegistrationPanel();
+                                setAuthorized(false);
+                                String messageStr = "Регистрация прошла успешно. Теперь Вы можете войти.";
+                                printMessage("System", "", messageStr, false, true);
+                                continue;
+                            }
+                            
+                            printMessage("System", "", str, false, true);
                         }
                         
                         while (true) {
@@ -126,13 +149,13 @@ public class Controller implements Initializable {
                                 
                                 if(str.startsWith("/bMsg")) {
                                     String[] parts = str.split(separator, 4);
-                                    boolean income = !parts[2].equals(myNickName);
+                                    boolean income = !parts[2].equals(myLogin);
                                     msg = new MessageCell(parts[2], parts[1], parts[3], false, income);
                                 }
     
                                 if(str.startsWith("/pMsg")) {
                                     String[] parts = str.split(separator, 4);
-                                    boolean income = !parts[2].equals(myNickName);
+                                    boolean income = !parts[2].equals(myLogin);
                                     msg = new MessageCell(parts[2], parts[1], parts[3], true, income);
                                 }
                                 
@@ -150,6 +173,14 @@ public class Controller implements Initializable {
                                             }
                                         });
                                     }
+                                }
+                                
+                                if(str.startsWith("/updateNickOk")) {
+                                    printMessage("System", "", "Ник успешно обновлен", false, true);
+                                }
+                                
+                                if(str.startsWith("/updatePassOk")) {
+                                    printMessage("System", "", "Пароль успешно обновлен", false, true);
                                 }
                                 
                                 if(msg != null) {
@@ -203,17 +234,129 @@ public class Controller implements Initializable {
             }
         } else {
             String messageStr = "Имя пользователя должно состоять из букв латинского алфавита или цифр. Длина имени от 3 до 15 символов.";
-            MessageCell msg = new MessageCell("System", "", (messageStr + "\n"), false, true);
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    messagesVBox.getChildren().add(msg);
-                }
-            });
+            printMessage("System", "", messageStr, false, true);
         }
         loginField.clear();
         passwordField.clear();
         
-        myNickName = login;
+        myLogin = login;
+    }
+    
+    public void openRegistrationPanel() {
+        authPanel.setVisible(false);
+        authPanel.setManaged(false);
+        messageSendPanel.setVisible(false);
+        messageSendPanel.setManaged(false);
+        rightPanel.setVisible(false);
+        rightPanel.setManaged(false);
+        registrationPanel.setVisible(true);
+        registrationPanel.setManaged(true);
+    }
+    
+    public void closeRegistrationPanel() {
+        authPanel.setVisible(true);
+        authPanel.setManaged(true);
+        messageSendPanel.setVisible(false);
+        messageSendPanel.setManaged(false);
+        rightPanel.setVisible(false);
+        rightPanel.setManaged(false);
+        registrationPanel.setVisible(false);
+        registrationPanel.setManaged(false);
+    }
+    
+    public void tryToRegister() {
+        String login = regLoginField.getText();
+        String pass = regPasswordField.getText();
+        String repeat = regPasswordRepeatField.getText();
+        String nick = regNickField.getText();
+        if(!login.matches("^[\\w]{3,15}$"))
+        {
+            String messageStr = "Имя пользователя должно состоять из букв латинского алфавита или цифр. Длина имени от 3 до 15 символов.";
+            printMessage("System", "", messageStr, false, true);
+            return;
+        }
+        
+        if(pass.equals("")) {
+            String messageStr = "Заполните поле пароль";
+            printMessage("System", "", messageStr, false, true);
+            return;
+        }
+        
+        if(!pass.equals(repeat)) {
+            String messageStr = "Введенные пароли не совпадают";
+            printMessage("System", "", messageStr, false, true);
+            return;
+        }
+    
+        if(nick.equals("")) {
+            String messageStr = "Ник не может быть пустым";
+            printMessage("System", "", messageStr, false, true);
+            return;
+        }
+    
+        try {
+            out.writeUTF("/reg " + login + " " + pass + " " + nick);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void closeUpdateUserDataPanel() {
+        updateUserDataPanel.setManaged(false);
+        updateUserDataPanel.setVisible(false);
+        newNickField.clear();
+        newPasswordField.clear();
+        newPasswordRepeatField.clear();
+        currentPasswordField.clear();
+    }
+    
+    public void openUpdateUserDataPanel() {
+        updateUserDataPanel.setManaged(true);
+        updateUserDataPanel.setVisible(true);
+    }
+    
+    public void updateUserData() {
+        String pass = newPasswordField.getText();
+        String repeat = newPasswordRepeatField.getText();
+        String nick = newNickField.getText();
+        String currPass = currentPasswordField.getText();
+        if(!pass.equals(repeat)) {
+            String messageStr = "Введенные пароли не совпадают";
+            printMessage("System", "", messageStr, false, true);
+            return;
+        }
+        if(nick.equals("") && pass.equals("")) {
+            String messageStr = "Изменения отсутвуют";
+            printMessage("System", "", messageStr, false, true);
+            closeUpdateUserDataPanel();
+            return;
+        }
+        
+        if(!nick.equals("")) {
+            try {
+                out.writeUTF("/updateNick " + myLogin + " " + currPass + " " + nick);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    
+        if(!pass.equals("")) {
+            try {
+                out.writeUTF("/updatePass " + myLogin + " " + currPass + " " + pass);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        closeUpdateUserDataPanel();
+    }
+    
+    public void printMessage(String nameStr, String timeStr, String messageStr, boolean privateMsg, boolean income) {
+        MessageCell msg = new MessageCell(nameStr, timeStr, (messageStr + "\n"), privateMsg, income);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                messagesVBox.getChildren().add(msg);
+            }
+        });
     }
 }
