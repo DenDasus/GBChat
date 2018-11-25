@@ -1,5 +1,8 @@
 package server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,7 +11,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class ClientHandler {
-    
+    final Logger logger = LogManager.getLogger(ClientHandler.class);
+
     final ClientHandler instance = this;
 
     private MainServer server;
@@ -29,7 +33,7 @@ public class ClientHandler {
     }
     
     public ClientHandler(MainServer server, Socket socket) {
-        
+
         try {
             this.server = server;
             this.socket = socket;
@@ -66,12 +70,13 @@ public class ClientHandler {
                                         sendMsg("/authok");
                                         setUserNick(newNick);
                                         server.addClient(ClientHandler.this);
+                                        logger.debug("Успешная авторизация");
                                         break;
                                     } else {
-                                        sendMsg("Данный логин уже занят!");
+                                        logger.error("Данный логин уже занят!");
                                     }
                                 } else {
-                                    sendMsg("Неверный логин или пароль!");
+                                    logger.error("Неверный логин или пароль!");
                                 }
                             }
                         }
@@ -80,6 +85,7 @@ public class ClientHandler {
                             String str = in.readUTF();
                             
                             if(str.startsWith("/")) {
+                                logger.debug("Команда от пользователя: " + str);
                                 if (str.equals("/end")) {
                                     out.writeUTF("/serverClosed");
                                     break;
@@ -122,7 +128,7 @@ public class ClientHandler {
             out.close();
             socket.close();
             server.deleteClient(instance);
-            System.out.println("Клиент отключился!");
+            logger.debug("Клиент отключился!");
         } catch (IOException e) {
             e.printStackTrace();
         }

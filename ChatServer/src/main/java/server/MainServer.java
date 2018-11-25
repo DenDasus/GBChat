@@ -1,17 +1,18 @@
 package server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Scanner;
 import java.util.Vector;
 
 public class MainServer {
+
+    final Logger logger = LogManager.getLogger(MainServer.class);
 
     Vector<ClientHandler> clients;
     private SimpleDateFormat formatTime = new SimpleDateFormat("hh:mm");
@@ -27,11 +28,11 @@ public class MainServer {
 
         try {
             server = new ServerSocket(8189);
-            System.out.println("Сервер запущен!");
+            logger.debug("Сервер запущен!");
 
             while (true) {
                 socket = server.accept();
-                System.out.println("Клиент подключился!");
+                logger.debug("Клиент подключился!");
                 new ClientHandler(this, socket);
             }
 
