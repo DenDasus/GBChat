@@ -13,11 +13,38 @@
         <Insets top="10" right="10" bottom="10" left="10"/>
     </padding>
 
-    <HBox fx:id="authPanel">
-        <TextField fx:id="loginField" promptText="Логин" HBox.hgrow="ALWAYS"></TextField>
-        <PasswordField fx:id="passwordField" promptText="Пароль" HBox.hgrow="ALWAYS" onAction="#tryToLogin"></PasswordField>
-        <Button text="Войти" onAction="#tryToLogin"></Button>
-    </HBox>
+    <VBox fx:id="authPanel" spacing="5">
+        <HBox spacing="5">
+            <TextField fx:id="loginField" promptText="Логин" HBox.hgrow="ALWAYS"></TextField>
+            <PasswordField fx:id="passwordField" promptText="Пароль" HBox.hgrow="ALWAYS" onAction="#tryToLogin"></PasswordField>
+        </HBox>
+        <HBox spacing="5">
+            <Button text="Войти" onAction="#tryToLogin"></Button>
+            <Button text="Регистрация" onAction="#openRegistrationPanel"></Button>
+        </HBox>
+    </VBox>
+
+    <VBox fx:id="registrationPanel" spacing="5"  managed="false" visible="false">
+        <TextField fx:id="regLoginField" promptText="Логин"></TextField>
+        <PasswordField fx:id="regPasswordField" promptText="Пароль"></PasswordField>
+        <PasswordField fx:id="regPasswordRepeatField" promptText="Повторите пароль" onAction="#tryToRegister"></PasswordField>
+        <TextField fx:id="regNickField" promptText="Отображаемое имя (Ник)"></TextField>
+        <HBox spacing="5">
+            <Button text="Зарегистрироваться" onAction="#tryToRegister"></Button>
+            <Button text="Я уже зарегистрирован" onAction="#closeRegistrationPanel"></Button>
+        </HBox>
+    </VBox>
+
+    <VBox fx:id="updateUserDataPanel" spacing="5"  managed="false" visible="false">
+        <PasswordField fx:id="newPasswordField" promptText="Новый пароль"></PasswordField>
+        <PasswordField fx:id="newPasswordRepeatField" promptText="Повторите новый пароль"></PasswordField>
+        <TextField fx:id="newNickField" promptText="Отображаемое имя (Ник)"></TextField>
+        <PasswordField fx:id="currentPasswordField" promptText="Текущий пароль (для подтверждения)"></PasswordField>
+        <HBox spacing="5">
+            <Button text="ОК" onAction="#updateUserData"></Button>
+            <Button text="Отмена" onAction="#closeUpdateUserDataPanel"></Button>
+        </HBox>
+    </VBox>
 
     <HBox VBox.vgrow="ALWAYS">
         <ScrollPane fx:id="messagesBoxScrollPane" HBox.hgrow="ALWAYS" fitToWidth="true" >
@@ -27,7 +54,11 @@
                 </padding>
             </VBox>
         </ScrollPane>
-        <ListView fx:id="clientsList" managed="false" visible="false"/>
+        <VBox fx:id="rightPanel" managed="false" visible="false" spacing="5">
+            <Button text="Настройки" onAction="#openUpdateUserDataPanel" HBox.hgrow="ALWAYS"/>
+            <ListView fx:id="clientsList" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
     </HBox>
 
     <HBox fx:id="messageSendPanel" spacing="10" alignment="BOTTOM_CENTER" visible="false">
